@@ -9,6 +9,9 @@ comet_ml
 hydra-core
 soundfile
 editdistance
+datasets
+wget
+torchvision
 
 black
 isort

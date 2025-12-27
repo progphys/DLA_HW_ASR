@@ -2,8 +2,8 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-
-
+from pathlib import Path
+import torch
 class CometMLWriter:
     """
     Class for experiment tracking via CometML.
@@ -186,16 +186,22 @@ class CometMLWriter:
 
         Args:
             audio_name (str): name of the audio to use in the tracker.
-            audio (Path | ndarray): audio in the CometML-friendly format.
+            audio (Path | ndarray | torch): audio in the CometML-friendly format. (T, C)
             sample_rate (int): audio sample rate.
         """
-        audio = audio.detach().cpu().numpy().T
+
+        if isinstance(audio,(str,Path)):
+            sample_rate = None
+        elif isinstance(audio,torch.Tensor):
+           audio = audio.detach().cpu().numpy().T
+           print(audio) 
+        
         self.exp.log_audio(
-            file_name=self._object_name(audio_name),
-            audio_data=audio,
-            sample_rate=sample_rate,
-            step=self.step,
-        )
+                file_name=self._object_name(audio_name),
+                audio_data=audio,
+                sample_rate=sample_rate,
+                step=self.step,
+            )
 
     def add_text(self, text_name, text):
         """

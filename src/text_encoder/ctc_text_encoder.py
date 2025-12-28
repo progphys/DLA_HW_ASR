@@ -58,7 +58,10 @@ class CTCTextEncoder:
         return "".join([self.ind2char[int(ind)] for ind in inds]).strip()
 
     def ctc_decode(self, inds) -> str:
-        inds = inds.detach().cpu()
+        if isinstance(inds, torch.Tensor):
+            inds = inds.detach().cpu()
+        elif not torch.is_tensor(inds):
+            inds = torch.as_tensor(inds)
         # delete blacnk symbols
         inds = inds[inds != 0]
 

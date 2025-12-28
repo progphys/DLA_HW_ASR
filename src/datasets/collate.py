@@ -25,7 +25,7 @@ def collate_fn(dataset_items: list[dict]):
     for i, a in enumerate(audios):
         batch_audio[i, 0, : a.size(1)] = a[0]
     # -------------spectrogram------------------
-    specs = [x["spectrogram"] for x in dataset_items]
+    specs = [x["spectrogram"].squeeze(0) for x in dataset_items]
     spec_len = torch.tensor([s.size(1) for s in specs], dtype=torch.long)
     max_spec_len = int(spec_len.max().item())
 

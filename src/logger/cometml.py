@@ -178,6 +178,9 @@ class CometMLWriter:
             image (Path | Tensor | ndarray | list[tuple] | Image): image
                 in the CometML-friendly format.
         """
+        if torch.is_tensor(image):
+            image = image.detach().cpu()
+        image = image.permute(1, 2, 0)
         self.exp.log_image(
             image_data=image, name=self._object_name(image_name), step=self.step
         )

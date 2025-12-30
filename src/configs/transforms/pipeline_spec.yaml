@@ -1,0 +1,3 @@
+defaults:
+  - instance_transforms: spec
+  - batch_transforms: null

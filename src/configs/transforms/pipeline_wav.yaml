@@ -1,0 +1,3 @@
+defaults:
+  - instance_transforms: wav
+  - batch_transforms: null

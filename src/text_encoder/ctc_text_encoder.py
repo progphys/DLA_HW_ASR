@@ -1,3 +1,4 @@
+import math
 import re
 from string import ascii_lowercase
 
@@ -80,3 +81,60 @@ class CTCTextEncoder:
         text = text.lower()
         text = re.sub(r"[^a-z ]", "", text)
         return text
+
+    @staticmethod
+    def lse(a, b):
+        if a == -math.inf:
+            return b
+        if b == -math.inf:
+            return a
+        m = a if a > b else b
+        return m + math.log(math.exp(a - m) + math.exp(b - m))
+
+    def ctc_beam_search(self, log_probs, beam_size=10):
+        blank = self.char2ind[self.EMPTY_TOK]
+        lp = log_probs.detach().cpu()
+
+        beams = {(): (0.0, -math.inf)}
+
+        for t in range(lp.size(0)):
+            new = {}
+
+            top = sorted(
+                beams.items(),
+                key=lambda kv: self.lse(kv[1][0], kv[1][1]),
+                reverse=True,
+            )[:beam_size]
+
+            for pref, (pb, pnb) in top:
+                last = pref[-1] if pref else None
+
+                for c in range(lp.size(1)):
+                    p = float(lp[t, c])
+
+                    if c == blank:
+                        nb, nnb = new.get(pref, (-math.inf, -math.inf))
+                        nb = self.lse(nb, pb + p)
+                        nb = self.lse(nb, pnb + p)
+                        new[pref] = (nb, nnb)
+                    else:
+                        if last == c:
+                            pref2 = pref + (c,)
+                            nb, nnb = new.get(pref2, (-math.inf, -math.inf))
+                            nnb = self.lse(nnb, pb + p)
+                            new[pref2] = (nb, nnb)
+
+                            sb, snb = new.get(pref, (-math.inf, -math.inf))
+                            snb = self.lse(snb, pnb + p)
+                            new[pref] = (sb, snb)
+                        else:
+                            pref2 = pref + (c,)
+                            nb, nnb = new.get(pref2, (-math.inf, -math.inf))
+                            nnb = self.lse(nnb, pb + p)
+                            nnb = self.lse(nnb, pnb + p)
+                            new[pref2] = (nb, nnb)
+
+            beams = new
+
+        best = max(beams.items(), key=lambda kv: self.lse(kv[1][0], kv[1][1]))[0]
+        return self.ctc_decode(torch.tensor(best))

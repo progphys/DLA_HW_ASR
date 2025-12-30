@@ -3,18 +3,18 @@ import torch.nn as nn
 
 
 class Conv2dSubsampling(nn.Module):
-    def __init__(self, n_mels: int, d_model: int, dropout: float = 0.1):
+    def __init__(self, n_mels: int, in_features: int, dropout: float = 0.1):
         super().__init__()
         self.conv = nn.Sequential(
-            nn.Conv2d(1, d_model, 3, stride=2, padding=1),
+            nn.Conv2d(1, in_features, 3, stride=2, padding=1),
             nn.ReLU(),
-            nn.Conv2d(d_model, d_model, 3, stride=2, padding=1),
+            nn.Conv2d(in_features, in_features, 3, stride=2, padding=1),
             nn.ReLU(),
         )
 
         f = (n_mels + 1) // 2
         f = (f + 1) // 2
-        self.proj = nn.Linear(d_model * f, d_model)
+        self.proj = nn.Linear(in_features * f, in_features)
         self.drop = nn.Dropout(dropout)
 
     def forward(self, spec: torch.Tensor, lengths: torch.Tensor):

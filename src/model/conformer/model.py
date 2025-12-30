@@ -1,8 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from conformer_blocks import ConformerBlocks
-from subsampling import Conv2dSubsampling4
+
+from .conformer_blocks import ConformerBlocks
+from .subsampling import Conv2dSubsampling
 
 
 def lengths_to_padding_mask(lengths: torch.Tensor, max_len: int) -> torch.Tensor:
@@ -24,7 +25,7 @@ class ConformerCTCModel(nn.Module):
         dropout=0.1,
     ):
         super().__init__()
-        self.subsampling = Conv2dSubsampling4(
+        self.subsampling = Conv2dSubsampling(
             n_mels=n_mels, in_features=in_features, dropout=dropout
         )
 
@@ -43,7 +44,7 @@ class ConformerCTCModel(nn.Module):
         self, spectrogram: torch.Tensor, spectrogram_length: torch.Tensor, **batch
     ):
         x, out_len = self.subsampling(spectrogram, spectrogram_length)
-
+        out_len = out_len.to(x.device)
         pad_mask = lengths_to_padding_mask(out_len, max_len=x.size(1))
 
         x = self.encoder(x, key_padding_mask=pad_mask)

@@ -1,8 +1,9 @@
 import torch
 import torch.nn as nn
-from conv_module import ConformerConvModule
-from ffn import FeedForwardModule
-from mhsa import MHSAModule
+
+from .conv_module import ConformerConvModule
+from .ffn import FeedForwardModule
+from .mhsa import MHSAModule
 
 
 class ConformerBlock(nn.Module):

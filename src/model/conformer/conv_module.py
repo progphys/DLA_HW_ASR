@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from ffn import Swish
+
+from .ffn import Swish
 
 
 class ConformerConvModule(nn.Module):

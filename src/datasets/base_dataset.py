@@ -88,16 +88,26 @@ class BaseDataset(Dataset):
 
         instance_data = {
             "audio": audio,
-            "spectrogram": spectrogram,
             "text": text,
             "text_encoded": text_encoded,
             "audio_path": audio_path,
         }
 
-        # TODO think of how to apply wave augs before calculating spectrogram
-        # Note: you may want to preserve both audio in time domain and
-        # in time-frequency domain for logging
-        instance_data = self.preprocess_data(instance_data)
+        if self.instance_transforms is not None and "audio" in self.instance_transforms:
+            instance_data["audio"] = self.instance_transforms["audio"](
+                instance_data["audio"]
+            )
+
+        spectrogram = self.get_spectrogram(instance_data["audio"])
+        instance_data["spectrogram"] = spectrogram
+
+        if (
+            self.instance_transforms is not None
+            and "spectrogram" in self.instance_transforms
+        ):
+            instance_data["spectrogram"] = self.instance_transforms["spectrogram"](
+                instance_data["spectrogram"]
+            )
 
         return instance_data
 

@@ -4,6 +4,11 @@ from torch.nn import CTCLoss
 
 
 class CTCLossWrapper(CTCLoss):
+    def __init__(self, *args, **kwargs):
+        # ensure stability: avoid inf/nan from impossible alignments
+        kwargs.setdefault("zero_infinity", True)
+        super().__init__(*args, **kwargs)
+
     def forward(
         self, log_probs, log_probs_length, text_encoded, text_encoded_length, **batch
     ) -> Tensor:

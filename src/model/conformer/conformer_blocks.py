@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from block import ConformerBlock
+
+from .block import ConformerBlock
 
 
 class ConformerBlocks(nn.Module):

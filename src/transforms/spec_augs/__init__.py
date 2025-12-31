@@ -1,4 +1,4 @@
-from .freq_mask import FreqMask
-from .time_mask import TimeMask
+from src.transforms.spec_augs.FreqMask import FreqMask
+from src.transforms.spec_augs.TimeMask import TimeMask
 
 __all__ = ["TimeMask", "FreqMask"]

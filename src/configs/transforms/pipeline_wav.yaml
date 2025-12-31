@@ -1,3 +1,4 @@
 defaults:
+  - batch_transforms: example
   - instance_transforms: wav
-  - batch_transforms: null
+  - _self_

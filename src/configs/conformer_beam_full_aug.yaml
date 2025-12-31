@@ -1,7 +1,7 @@
 defaults:
   - model: conformer_ctc
   - writer: cometml
-  - metrics: argmax_beam10
+  - metrics: argmax_beam_10
   - datasets: example
   - dataloader: big_batch
   - transforms: pipeline_wav_spec

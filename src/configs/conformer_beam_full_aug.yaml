@@ -27,7 +27,7 @@ text_encoder:
 
 trainer:
   log_step: 100
-  n_epochs: 10
+  n_epochs: 40
   epoch_len: 1000
   device_tensors: ["spectrogram", "spectrogram_length", "text_encoded", "text_encoded_length"]
   resume_from: null

@@ -90,7 +90,14 @@ class Trainer(BaseTrainer):
         self.writer.add_image("spectrogram", image)
 
     def log_predictions(
-        self, text, log_probs, log_probs_length, audio_path, examples_to_log=10, **batch
+        self,
+        text,
+        log_probs,
+        log_probs_length,
+        audio_path,
+        examples_to_log=10,
+        beam_size=10,
+        **batch
     ):
 
         argmax_inds = log_probs.cpu().argmax(-1).numpy()
@@ -100,23 +107,53 @@ class Trainer(BaseTrainer):
                 argmax_inds, log_probs_length.detach().cpu().numpy()
             )
         ]
+        argmax_lens = log_probs_length.detach().cpu().numpy()
+        argmax_inds = [inds[: int(L)] for inds, L in zip(argmax_inds, argmax_lens)]
         argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
         argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
         tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path))
 
+        beam_texts_raw = None
+        try:
+            beam_texts_raw = self.text_encoder.ctc_beam_search(
+                log_probs=log_probs,
+                log_probs_length=log_probs_length,
+                beam_size=beam_size,
+            )
+        except Exception:
+            beam_texts_raw = None
+
         rows = {}
-        for pred, target, raw_pred, audio_path in tuples[:examples_to_log]:
+        n = min(examples_to_log, len(audio_path))
+        for i in range(n):
+            pred = argmax_texts[i]
+            target = text[i]
+            raw_pred = argmax_texts_raw[i]
+            ap = audio_path[i]
+
             target = self.text_encoder.normalize_text(target)
             wer = calc_wer(target, pred) * 100
             cer = calc_cer(target, pred) * 100
 
-            rows[Path(audio_path).name] = {
+            raw_beam = ""
+            wer_beam = None
+            cer_beam = None
+            if beam_texts_raw is not None:
+                raw_beam = beam_texts_raw[i]
+                wer_beam = calc_wer(target, raw_beam) * 100
+                cer_beam = calc_cer(target, raw_beam) * 100
+
+            rows[Path(ap).name] = {
                 "target": target,
                 "raw prediction": raw_pred,
                 "predictions": pred,
                 "wer": wer,
                 "cer": cer,
+                "raw prediction (beam)": raw_beam,
+                "wer (beam)": wer_beam,
+                "cer (beam)": cer_beam,
             }
+
         self.writer.add_table(
             "predictions", pd.DataFrame.from_dict(rows, orient="index")
         )

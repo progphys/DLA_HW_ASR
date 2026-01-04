@@ -13,3 +13,6 @@ inferencer:
   save_path: "inference_run"
   decoding: argmax
   beam_size: 10
+
+text_encoder:
+  _target_: src.text_encoder.CTCTextEncoder

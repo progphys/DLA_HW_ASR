@@ -10,25 +10,17 @@
 
 ## About
 
-This repository contains a template for solving ASR task with PyTorch. This template branch is a part of the [HSE DLA course](https://github.com/markovka17/dla) ASR homework. Some parts of the code are missing (or do not follow the most optimal design choices...) and students are required to fill these parts themselves (as well as writing their own models, etc.).
+Этот репозиторий содержит реализацию модель Conformer-CTC для задачи ASR
 
-See the task assignment [here](https://github.com/markovka17/dla/tree/2024/hw1_asr).
+Логи обучения: https://www.comet.com/progphys/asr-hw/view/new/panels
+
+Демо: https://colab.research.google.com/drive/1-gxxBJGX5qQa9hHNlaCQCuPMuOF7XuFx?usp=sharing 
 
 ## Installation
 
-Follow these steps to install the project:
 
-0. (Optional) Create and activate new environment using [`conda`](https://conda.io/projects/conda/en/latest/user-guide/getting-started.html) or `venv` ([`+pyenv`](https://github.com/pyenv/pyenv)).
 
-   a. `conda` version:
-
-   ```bash
-   # create env
-   conda create -n project_env python=PYTHON_VERSION
-
-   # activate env
-   conda activate project_env
-   ```
+0. Создайте окружение для работы с проектом
 
    b. `venv` (`+pyenv`) version:
 
@@ -43,37 +35,29 @@ Follow these steps to install the project:
    source project_env/bin/activate
    ```
 
-1. Install all required packages
+1. Установить все необходимые зависимости
 
    ```bash
    pip install -r requirements.txt
    ```
 
-2. Install `pre-commit`:
-   ```bash
-   pre-commit install
-   ```
 
 ## How To Use
 
-To train a model, run the following command:
+Для обучения модели сделать следующее
 
 ```bash
 python3 train.py -cn=CONFIG_NAME HYDRA_CONFIG_ARGUMENTS
 ```
 
-Where `CONFIG_NAME` is a config from `src/configs` and `HYDRA_CONFIG_ARGUMENTS` are optional arguments.
+Где `CONFIG_NAME` — это конфигурация из `src/configs`, а `HYDRA_CONFIG_ARGUMENTS` — необязательные аргументы.
 
-To run inference (evaluate the model or save predictions):
-
+Чтобы запустить инференс (оценить модель или сохранить предсказания):
 ```bash
 python3 inference.py HYDRA_CONFIG_ARGUMENTS
 ```
-
 ## Credits
-
 This repository is based on a [PyTorch Project Template](https://github.com/Blinorot/pytorch_project_template).
-
 ## License
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](/LICENSE)

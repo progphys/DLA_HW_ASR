@@ -6,4 +6,4 @@ data
 outputs/
 saved/
 .env
-.cometml-runs
+.cometml-runs/

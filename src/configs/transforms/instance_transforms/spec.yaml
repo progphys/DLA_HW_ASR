@@ -6,11 +6,11 @@ train:
     _target_: torchvision.transforms.v2.Compose
     transforms:
       - _target_: src.transforms.spec_augs.TimeMask
-        p: 0.8
+        p: 0.6
         time_mask_param: 30
         iid_masks: false
       - _target_: src.transforms.spec_augs.FreqMask
-        p: 0.8
+        p: 0.6
         freq_mask_param: 10
         iid_masks: false
 

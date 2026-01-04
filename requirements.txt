@@ -1,5 +1,5 @@
-torch==2.2.0
-torchaudio==2.2.0
+torch==2.2.2
+torchaudio==2.2.2
 numpy==1.26.4
 torch_audiomentations
 tqdm
@@ -11,7 +11,8 @@ soundfile
 editdistance
 datasets
 wget
-torchvision
+torchvision==0.17.2
+scipy
 
 black
 isort

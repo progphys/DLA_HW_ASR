@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import torch
 from tqdm.auto import tqdm
 
@@ -120,8 +122,6 @@ class Inferencer(BaseTrainer):
                 the dataloader (possibly transformed via batch transform)
                 and model outputs.
         """
-        # TODO change inference logic so it suits ASR assignment
-        # and task pipeline
 
         batch = self.move_batch_to_device(batch)
         batch = self.transform_batch(batch)  # transform batch on device -- faster
@@ -133,30 +133,38 @@ class Inferencer(BaseTrainer):
             for met in self.metrics["inference"]:
                 metrics.update(met.name, met(**batch))
 
-        # Some saving logic. This is an example
-        # Use if you need to save predictions on disk
+        if self.save_path is not None:
+            out_dir = self.save_path / part
+            out_dir.mkdir(exist_ok=True, parents=True)
 
-        batch_size = batch["logits"].shape[0]
-        current_id = batch_idx * batch_size
+            log_probs = batch["log_probs"]
+            lp_lens = batch["log_probs_length"]
+            audio_paths = batch["audio_path"]
 
-        for i in range(batch_size):
-            # clone because of
-            # https://github.com/pytorch/pytorch/issues/1995
-            logits = batch["logits"][i].clone()
-            label = batch["labels"][i].clone()
-            pred_label = logits.argmax(dim=-1)
+            if log_probs.dim() == 3 and log_probs.shape[1] < log_probs.shape[2]:
+                log_probs = log_probs.transpose(1, 2)
 
-            output_id = current_id + i
+            decoding = self.cfg_trainer.get("decoding", "argmax")
+            beam_size = int(self.cfg_trainer.get("beam_size", 10))
 
-            output = {
-                "pred_label": pred_label,
-                "label": label,
-            }
+            pred_ids = torch.argmax(log_probs.detach().cpu(), dim=-1)
+            lp_lens = lp_lens.detach().cpu().long().tolist()
 
-            if self.save_path is not None:
-                # you can use safetensors or other lib here
-                torch.save(output, self.save_path / part / f"output_{output_id}.pth")
+            for i, ap in enumerate(audio_paths):
+                utt_id = Path(ap).stem
+                T = int(lp_lens[i])
 
+                if decoding == "beam":
+                    pred_text = self.text_encoder.ctc_beam_search(
+                        log_probs[i, :T].detach().cpu(), beam_size=beam_size
+                    )
+                else:
+                    pred_text = self.text_encoder.ctc_decode(pred_ids[i, :T])
+
+                (out_dir / f"{utt_id}.txt").write_text(
+                    pred_text.strip() + "\n",
+                    encoding="utf-8",
+                )
         return batch
 
     def _inference_part(self, part, dataloader):
